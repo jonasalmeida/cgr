@@ -16,9 +16,10 @@ String.prototype.sort=function(){ // sort characters of a string
 	return y;
 }
 
-usm = function (seq,abc){ // Universal Sequence Map
+usm = function (seq,abc,pack){ // Universal Sequence Map
+
 	this.alphabet=function(seqString){//extracts alphabet
-		if (!seqString){seqString=this.str} //uses own string if argument not provided
+		if (!seqString){seqString=this.seq} //uses own string if argument not provided
 		var abc='';
 		for (var i=0;i<seqString.length;i++){
 			if (!abc.match(new RegExp(seqString[i]))){abc+=seqString[i]}
@@ -26,34 +27,108 @@ usm = function (seq,abc){ // Universal Sequence Map
 		return abc.sort(); // using overloaded String.sort()
 	}
 	
-	if (seq){this.str=seq}
-	if (!abc){this.abc=this.alphabet()}// extract alphabet		
-	else {this.abc=abc}
-	
-	var m = this.abc.length;var n = this.str.length;
-	this.str2bin = function(map){
-		if (!map){map='sparce'}
+	this.str2bin = function(pack){
+		var m = this.abc.length;var n = this.seq.length;
+		if (!pack){pack='compact'} // default packing method
+		this.pack=pack;
 		this.bin=[];
-		switch (map){
-		case 'sparce':
+		switch (pack){
+		case 'sparse':
 			for (var j=0;j<m;j++){
+				this.ABC[j]=this.abc[j];
 				this.bin[j]=[];
 				for (i=0;i<n;i++){
-					if (this.str[i]===this.abc[j]){this.bin[j][i]=1}
+					if (this.seq[i]===this.abc[j]){this.bin[j][i]=1}
 					else {this.bin[j][i]=0}
 				}
 			}
 			break;
 		case 'compact':
-			for (var j=0;j<Math.ceil(Math.log(8)/Math.log(2));j++){
+			var L = Math.ceil(Math.log(m)/Math.log(2)); // map dimension
+		    var mm=Math.pow(2,L); // maximum length of this alphabet
+			for (var j=0;j<L;j++){
 				this.bin[j]=[];
+				var abc='';mm=mm/2;
+				for (var i=0;i<m;i=i+mm*2){
+					abc+=this.abc.slice(i,i+mm);
+				}
+				this.ABC[j]=abc;
+				//console.log(mm+'> '+abc);
+				for (var i=0;i<n;i++){
+					if (abc.match(new RegExp(this.seq[i]))){this.bin[j][i]=1}
+					else {this.bin[j][i]=0}
+				}
 			}
-
-
+			break;
 		}
+	}
 		
-		//console.log('Size: [',n,',',m,']');
+	this.cgr = function(bin,y){ // CGR with recursive seed
+		var n = bin.length;
+		if (!y){y=[bin[bin.length-1]]}
+		var x = y[y.length-1];
+		//console.log(x); // seed
+		if (n>100){var i=n-100}
+		else {var i = 0}
+		while (i<bin.length){
+			x = x - (x-bin[i])/2;
+			y[i] = x;
+			i++;
+		}
+		if (y[0]!==x - (x-bin[0])/2){
+			y=this.cgr(bin,y);
+		}
+		return y;
 	}
 
-	this.str2bin();
+	this.transpose = function(M){
+		var T=[];
+		for (var i=0;i<M[0].length;i++){
+			T[i]=[];
+			for (var j=0;j<M.length;j++){T[i][j]=M[j][i]}
+		}
+		return T;
+	}
+
+	this.map = function(seq,abc,pack){
+		if (abc){if(abc.length==0){var abc = undefined}}
+		if (!seq){seq=this.seq}
+		else {this.seq=seq}
+		if (!this.seq){throw ('Sequence not provided')}
+		//if (seq){this.seq=seq}
+		//else throw ('Sequence not provided')
+		//if (!abc){this.abc=this.alphabet()}// extract alphabet		
+		//else {this.abc=abc}
+		if (abc){this.abc=abc};
+		if (!this.abc){this.abc=''}
+		this.abc=this.alphabet();
+		var m = this.abc.length;var n = this.seq.length;
+		this.ABC=[];
+		this.str2bin(pack);
+		this.mapForward = [];
+		this.mapBackward = [];
+		for (var i=0;i<this.bin.length;i++){
+			this.mapForward[i]=this.cgr(this.bin[i]);
+			this.mapBackward[i]=this.cgr(this.bin[i].reverse()).reverse();
+		}
+		delete this.bin; // comment out if bin is of any use
+	}
+
+	// run USM map automatically is a sequence is provided
+	if (seq){this.map(seq,abc,pack)}
+
+	this.distCoord = function (a,b){ // distance between two coordinates
+		var d=0;
+		while((Math.pow(2,d)!=Infinity)&Math.round(a*Math.pow(2,d))==Math.round(b*Math.pow(2,d))){d++}
+		return d;
+	}
+
+	//this.distPos = function (a,b){ // distance between two sequence positions
+	//	var dd = [];
+	//	for (var i=0;i<a.length;i++){
+	//		dd[i]=this.distCoord(a[i],b[i])
+	//	}
+	//}
+
+
 }
