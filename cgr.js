@@ -2,7 +2,8 @@
 
 console.log('CGR toolbox :-)');
 
-// Overload String type, not sure it is a good idea, could interfere with other overloads
+// Overloading String and Array - watch out!
+
 String.prototype.toArray = function(){ // creates an Array with each character of teh string as an element
 	var y=[];
 	for (var i=0;i<this.length;i++){
@@ -12,9 +13,18 @@ String.prototype.toArray = function(){ // creates an Array with each character o
 }
 
 String.prototype.sort=function(){ // sort characters of a string
-	var y =this.toArray().sort().toString().replace(/,/g,'');
-	return y;
+	return this.toArray().sort().toString().replace(/,/g,'');
 }
+
+Array.prototype.max=function(){ // returns maximum value
+	return this.reduce(function(x1,x2){if(x1>x2){return x1}else{return x2}});
+}
+
+Array.prototype.min=function(){ // returns maximum value
+	return this.reduce(function(x1,x2){if(x1<x2){return x1}else{return x2}});
+}
+
+// Universal Sequence Mapping (USM)
 
 usm = function (seq,abc,pack){ // Universal Sequence Map
 
@@ -90,30 +100,26 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 		return T;
 	}
 
-	this.map = function(seq,abc,pack){
-		if (abc){if(abc.length==0){var abc = undefined}}
+	this.encode = function(seq,abc,pack){
 		if (!seq){seq=this.seq}
 		else {this.seq=seq}
 		if (!this.seq){throw ('Sequence not provided')}
-		//if (seq){this.seq=seq}
-		//else throw ('Sequence not provided')
-		//if (!abc){this.abc=this.alphabet()}// extract alphabet		
-		//else {this.abc=abc}
-		if (abc){this.abc=abc};
-		if (!this.abc){this.abc=''}
-		this.abc=this.alphabet();
+		if (abc){if(abc.length==0){var abc = undefined}} // in case abc=''
+		if (abc){this.abc=abc}
+		//if (!this.abc){this.abc=''}
+		if (!this.abc){this.abc=this.alphabet()};
 		var m = this.abc.length;var n = this.seq.length;
 		this.ABC=[];
 		this.str2bin(pack);
-		this.mapForward = [];
-		this.mapBackward = [];
+		this.cgrForward = [];
+		this.cgrBackward = [];
 		for (var i=0;i<this.bin.length;i++){
-			this.mapForward[i]=this.cgr(this.bin[i]);
-			this.mapBackward[i]=this.cgr(this.bin[i].reverse()).reverse();
+			this.cgrForward[i]=this.cgr(this.bin[i]);
+			this.cgrBackward[i]=this.cgr(this.bin[i].reverse()).reverse();
 		}
 		delete this.bin; // comment out if bin is of any use
-		this.mapForward=this.transpose(this.mapForward);
-		this.mapBackward=this.transpose(this.mapBackward);
+		this.cgrForward=this.transpose(this.cgrForward);
+		this.cgrBackward=this.transpose(this.cgrBackward);
 	}
 
 	// run USM map automatically is a sequence is provided
@@ -124,17 +130,23 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 		return d;
 	}
 
-	this.distCGR = function (a,b){ // distance between two CGR positions, a and b are the CGR positions
-		ab=u.transpose([a,b]); // such that each element is an array with two coordinates, one from each sequence
-		var d = [];
-		ab.forEach(function(x,i){d[i]=this.distCoord(x[0],x[1])});
-		return d
+	this.distCGR = function (a,b){ // distance between two CGR positions, a and b
+		var ab=this.transpose([a,b]); // such that each position is an array of elements with two coordinates, one from each sequence
+		var dist = this.distCoord;
+		return this.transpose([a,b]).map(function(x){return dist(x[0],x[1])}).min();
 	}
 
 	this.mapReduce = function (x,map,reduce){
 		return reduce(x.map(map))
 	}
 
-	if (seq){this.map(seq,abc,pack)}
+	this.distProfile= function (s){// Distance to another sequence, s
+		if (typeof(s)=='string'){
+			s=new usm(s,this.abc,this.pack);
+		}
+		return s;
+	}
+
+	if (seq){this.encode(seq,abc,pack)}
 
 }
