@@ -1,6 +1,6 @@
 // Universal Sequence Maps (hoding Object for CGR operations
 
-console.log('CGR');
+console.log('CGR toolbox :-)');
 
 // Overload String type, not sure it is a good idea, could interfere with other overloads
 String.prototype.toArray = function(){ // creates an Array with each character of teh string as an element
@@ -112,23 +112,29 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 			this.mapBackward[i]=this.cgr(this.bin[i].reverse()).reverse();
 		}
 		delete this.bin; // comment out if bin is of any use
+		this.mapForward=this.transpose(this.mapForward);
+		this.mapBackward=this.transpose(this.mapBackward);
 	}
 
 	// run USM map automatically is a sequence is provided
-	if (seq){this.map(seq,abc,pack)}
-
+	
 	this.distCoord = function (a,b){ // distance between two coordinates
 		var d=0;
 		while((Math.pow(2,d)!=Infinity)&Math.round(a*Math.pow(2,d))==Math.round(b*Math.pow(2,d))){d++}
 		return d;
 	}
 
-	//this.distPos = function (a,b){ // distance between two sequence positions
-	//	var dd = [];
-	//	for (var i=0;i<a.length;i++){
-	//		dd[i]=this.distCoord(a[i],b[i])
-	//	}
-	//}
+	this.distCGR = function (a,b){ // distance between two CGR positions, a and b are the CGR positions
+		ab=u.transpose([a,b]); // such that each element is an array with two coordinates, one from each sequence
+		var d = [];
+		ab.forEach(function(x,i){d[i]=this.distCoord(x[0],x[1])});
+		return d
+	}
 
+	this.mapReduce = function (x,map,reduce){
+		return reduce(x.map(map))
+	}
+
+	if (seq){this.map(seq,abc,pack)}
 
 }
