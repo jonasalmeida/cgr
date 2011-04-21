@@ -24,6 +24,23 @@ Array.prototype.min=function(){ // returns maximum value
 	return this.reduce(function(x1,x2){if(x1<x2){return x1}else{return x2}});
 }
 
+Array.prototype.sum=function(){ // returns sum of all values
+	return this.reduce(function(x1,x2){return x1+x2});
+}
+
+Array.prototype.transpose=function(){ // written for arrays of arrays
+	if (!Array.isArray(this[0])){
+		M=this.map(function(x){return [x]})}
+	else {M=this};
+	var T=[];
+	for (var i=0;i<M[0].length;i++){
+		T[i]=[];
+		for (var j=0;j<M.length;j++){T[i][j]=M[j][i]}
+	}
+	if ((Array.isArray(T[0]))&&(T[0].length==1)){T=T.map(function(x){return x[0]})}
+	return T;
+}
+
 // Universal Sequence Mapping (USM)
 
 usm = function (seq,abc,pack){ // Universal Sequence Map
@@ -131,11 +148,11 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 	}
 
 	this.distCGR = function (a,b){ // distance between two CGR positions, a and b
-		var ab=this.transpose([a,b]); // such that each position is an array of elements with two coordinates, one from each sequence
+		//var ab=this.transpose([a,b]); // such that each position is an array of elements with two coordinates, one from each sequence
 		var dist = this.distCoord;
 		return this.transpose([a,b]).map(function(x){return dist(x[0],x[1])}).min();
 	}
-
+	
 	this.mapReduce = function (x,map,reduce){
 		return reduce(x.map(map))
 	}
@@ -144,7 +161,15 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 		if (typeof(s)=='string'){
 			s=new usm(s,this.abc,this.pack);
 		}
-		return s;
+		if (s.abc!==this.abc){throw('unequal alphabets')}
+		if (s.pack!==this.pack){throw('unequal encode packing')}
+		//var dist = this.distCGR;
+		//var distCoord
+		//var dist = function(a,b){return this.transpose([a,b]).map(function(x){return this.distCoord(x[0],x[1])}).min()};
+		var f = this.cgrForward.map(function(x){var x0=x; return s.cgrForward.map(function(x){return s.distCGR(x0,x)}).sum()});
+		var b = this.cgrBackward.map(function(x){var x0=x; return s.cgrBackward.map(function(x){return s.distCGR(x0,x)}).sum()});
+
+		return [f,b].transpose().sum();
 	}
 
 	if (seq){this.encode(seq,abc,pack)}
