@@ -62,7 +62,7 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 		switch (pack){
 		case 'sparse':
 			for (var j=0;j<m;j++){
-				this.ABC[j]=this.abc[j];
+				this.cube[j]=this.abc[j];
 				this.bin[j]=[];
 				for (i=0;i<n;i++){
 					if (this.seq[i]===this.abc[j]){this.bin[j][i]=1}
@@ -79,7 +79,7 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 				for (var i=0;i<m;i=i+mm*2){
 					abc+=this.abc.slice(i,i+mm);
 				}
-				this.ABC[j]=abc;
+				this.cube[j]=abc;
 				//console.log(mm+'> '+abc);
 				for (var i=0;i<n;i++){
 					if (abc.match(new RegExp(this.seq[i]))){this.bin[j][i]=1}
@@ -126,7 +126,7 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 		//if (!this.abc){this.abc=''}
 		if (!this.abc){this.abc=this.alphabet()};
 		var m = this.abc.length;var n = this.seq.length;
-		this.ABC=[];
+		this.cube=[];
 		this.str2bin(pack);
 		this.cgrForward = [];
 		this.cgrBackward = [];
@@ -139,9 +139,33 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 		this.cgrBackward=this.transpose(this.cgrBackward);
 	}
 
+	this.decodeBin = function(x,n){// decompose single coordinate, x, into a binary array of length <= n
+		if (!n){n=Infinity}
+		var y = [];var i = 0;
+		x=x*2;var z=[];
+		y[0]=x; // just in case x is 0, 1 or even 1/2 (impossible) y is still populated
+		while ((x!=Math.round(x))&(i<n)){
+			if (x>1){y[i]=1;x=x-1}
+			else{y[i]=0}
+			x = x*2;i++;
+		}
+		return y
+	}
+
+	this.decodeBins = function(x,n){// decode sequence from coordinates
+		if (this.cube.length!==x.length){throw('coordinate dimensions do not match, if should be an array with '+this.cube.length+' numbers')}
+		var decodeBin=this.decodeBin;
+		var y = x.map(function (x){return decodeBin(x,n)});
+		if (!n){// trim dimensions
+			n=y.map(function(x){return x.length}).min();
+			y=y.map(function(x){return x.splice(0,n)});
+		}
+		return y;
+	}
+
 	// run USM map automatically is a sequence is provided
 	
-	this.distCoord = function (a,b){ // distance between two coordinates
+	this.L = function (a,b){ // distance between two coordinates
 		var d=0;
 		while((Math.pow(2,d)!=Infinity)&Math.round(a*Math.pow(2,d))==Math.round(b*Math.pow(2,d))){d++}
 		return d;
@@ -149,7 +173,7 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 
 	this.distCGR = function (a,b){ // distance between two CGR positions, a and b
 		//var ab=this.transpose([a,b]); // such that each position is an array of elements with two coordinates, one from each sequence
-		var dist = this.distCoord;
+		var dist = this.L;
 		return this.transpose([a,b]).map(function(x){return dist(x[0],x[1])}).min();
 	}
 	
@@ -165,7 +189,7 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 		if (s.pack!==this.pack){throw('unequal encode packing')}
 		//var dist = this.distCGR;
 		//var distCoord
-		//var dist = function(a,b){return this.transpose([a,b]).map(function(x){return this.distCoord(x[0],x[1])}).min()};
+		//var dist = function(a,b){return this.transpose([a,b]).map(function(x){return this.L(x[0],x[1])}).min()};
 		var f = this.cgrForward.map(function(x){var x0=x; return s.cgrForward.map(function(x){return s.distCGR(x0,x)}).sum()});
 		var b = this.cgrBackward.map(function(x){var x0=x; return s.cgrBackward.map(function(x){return s.distCGR(x0,x)}).sum()});
 
