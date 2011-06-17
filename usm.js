@@ -3,7 +3,6 @@
 console.log('CGR toolbox :-)');
 
 // Overloading String and Array - watch out!
-
 String.prototype.toArray = function(){ // creates an Array with each character of teh string as an element
     var y=[];
     for (var i=0;i<this.length;i++){
@@ -65,8 +64,8 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
                 this.cube[j]=this.abc[j];
                 this.bin[j]=[];
                 for (i=0;i<n;i++){
-                    if (this.seq[i]===this.abc[j]){this.bin[j][i]=1}
-                    else {this.bin[j][i]=0}
+                    if (this.seq[i]===this.abc[j]){this.bin[j][i]=0}
+                    else {this.bin[j][i]=1}
                 }
             }
             break;
@@ -82,8 +81,8 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
                 this.cube[j]=abc;
                 //console.log(mm+'> '+abc);
                 for (var i=0;i<n;i++){
-                    if (abc.match(new RegExp(this.seq[i]))){this.bin[j][i]=1}
-                    else {this.bin[j][i]=0}
+                    if (abc.match(new RegExp(this.seq[i]))){this.bin[j][i]=0}
+                    else {this.bin[j][i]=1}
                 }
             }
             break;
@@ -154,15 +153,29 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
         return y
     }
 
-    this.decodeBins = function(x,n){// decode sequence from coordinates
-        if (this.cube.length!==x.length){throw('coordinate dimensions do not match, if should be an array with '+this.cube.length+' numbers')}
-        var decodeBin=this.decodeBin;
-        var y = x.map(function (x){return decodeBin(x,n)});
-        if (!n){// trim dimensions
-            n=y.map(function(x){return x.length}).min();
-            y=y.map(function(x){return x.splice(0,n)});
-        }
-        return y;
+    //this.decodeBins = function(x,n){// decode sequence from coordinates
+    //    if (this.cube.length!==x.length){throw('coordinate dimensions do not match, if should be an array with '+this.cube.length+' numbers')}
+    //    var decodeBin=this.decodeBin;
+    //    var y = x.map(function (x){return decodeBin(x,n)});
+        //if (!n){// trim dimensions
+        //    n=y.map(function(x){return x.length}).min();
+        //    y=y.map(function(x){return x.splice(0,n)});
+        //}
+    //    return y;
+    //}
+
+    this.bin2int = function (B){//converts binary vector into integer
+        return B.slice().reverse().map(function(x,i){return x*Math.pow(2,i)}).reduce(function(a,b){return a+b});
+    }
+
+    this.decode = function(xy,n){// decode numerical coordinates
+        var bin2int = this.bin2int;
+        var decodeBin = this.decodeBin;
+        var abc = this.abc;
+        var bb = xy.map(function(x){return decodeBin(x)});
+        bb = this.transpose(bb).map(function(x){return bin2int(x)});
+        bb = bb.map(function(x){return abc[x]});
+        return bb.toString().replace(/,/g,'');
     }
 
     // run USM map automatically is a sequence is provided
