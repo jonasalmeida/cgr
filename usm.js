@@ -211,6 +211,51 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
         return [f,b].transpose().sum();
     }
 
+	this.distMatrix=function (s){// Distance Matrix to a new sequence
+		var f,b;
+		s=new usm(s,this.abc,this.pack); // encode it the same way as teh reference matrix
+		f = this.cgrForward.map(function(x){var x0=x; return s.cgrForward.map(function(x){return s.distCGR(x0,x)})});
+        b = this.cgrBackward.map(function(x){var x0=x; return s.cgrBackward.map(function(x){return s.distCGR(x0,x)})});
+		return [f,b];
+	}
+
     if (seq){this.encode(seq,abc,pack)}
 
+}
+
+usmDist=function(s1,s2,opt){ // Compares two USM encoded sequences
+	if (!opt){opt='matrix'};
+	switch (opt)
+	{
+	case 'matrixForward':
+		return s1.cgrForward.map(function(x){var x0=x; return s2.cgrForward.map(function(x){return s2.distCGR(x0,x)})});
+		break;
+
+	case 'matrixBackward':
+		return s1.cgrBackward.map(function(x){var x0=x; return s2.cgrBackward.map(function(x){return s2.distCGR(x0,x)})});
+		break;
+
+	case 'matrix':
+		//var f1,b1,f2,b2;
+		//create two mirror (forward and backward) version of s1 and s2 
+		f1=s1;f1.c=s1.cgrForward;
+		b1=s1;b1.c=s1.cgrBackward;
+		f2=s2;f2.c=s2.cgrForward;
+		b1=s2;b2.c=s2.cgrBackward;
+		f=f1.c.map(function(x){var x0=x; return f2.c.map(function(x){return f1.distCGR(x0,x)})});
+		b=b1.c.map(function(x){var x0=x; return b2.c.map(function(x){return b1.distCGR(x0,x)})});
+		return [f,b]
+		break;
+
+	case 'sum':
+		break;
+
+	case 'max':
+		break;
+
+	case 'min':
+		break;
+
+
+	}
 }
