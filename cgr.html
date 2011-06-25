@@ -7,22 +7,27 @@
   <meta name="Description" content="Chaos Game Representation">
   <script src="usm.js"></script>
  </head>
-
  <body>
  <h3>1. Sequence</h3>
  <table>
- <tr id="cgrBase"><td>Base Sequence:</td><td><input id="baseSequence" type="text" style="color:blue"><button id="processBase" onclick="usmGUI.processBaseSequence()">Process </button></td></tr>
- <tr id="cgrProbe" style="display:none"><td>Probe Sequence:</td><td><input id="probeSequence" type="text" style="color:red"><button id="processProbe" onclick="usmGUI.processProbeSequence()">Process</button></td></tr>
+ <tr id="cgrBase"><td>Base Sequence:</td><td><input id="baseSequence" type="text" style="color:blue"><button id="processBase" onclick="usmGUI.processBaseSequence()">Encode </button></td></tr>
+ <tr id="cgrProbe" style="display:none"><td>Probe Sequence:</td><td><input id="probeSequence" type="text" style="color:red"><button id="processProbe" onclick="usmGUI.processProbeSequence()">Encode</button></td></tr>
  </table>
  <h3>2. Encoding / Decoding</h3>
- 
  <table id="baseCube" style="display:none">
  <tr><td>Alphabet: </td><td id="alphabet" style="color:blue"></td></tr>
- <tr><td>CGR cube zero: </td><td id="cube" style="color:blue"></td></tr>
+ <tr><td>Cube zeros: </td><td id="cube" style="color:blue"></td></tr>
  </table>
- 
+ <table id="decodeSingle" style="display:">
+ <tr><td>Single coordinate (number between 0 and 1)<input  onkeyup="usmGUI.decodeSingle(this,event)" style="color:green"> then press Enter</td></tr>
+ <tr><td id="singleDecoded" style="color:green"></td></tr>
+ </table>
+ <table>
+ <tr><td>Forward Coordinates</td><td id="forwardCoordinates"></td><td id="decodeForward"></td></tr>
+ <tr><td>Backward Coordinates</td><td id="backwardCoordinates"></td><td id="decodeBackward"></td></tr>
+ </table>
+
  <h3>3. Sequence analysis (map)</h3>
- 
  <table id="mapTable" style="display:none;color:blue">
  </table>
   <script>
@@ -53,78 +58,101 @@
   
   usmGUI.mapTableBase=function(){
 	 var tb,tbodyi,tri,tdi,n,m,i,j;
-     tb=gId('mapTable');
+     tb=gId('mapTable');tb.style.color='black';
 	 tb.style.display="";
 	 n=ubase.seq.length;
 	 m=ubase.cube.length;
-	 tbodyi = tbody();tb.appendChild(tbodyi);
-	 // Table head
-	 tri = tr();tbodyi.appendChild(tri);
+	 tbodyi = tbody();tb.appendChild(tbodyi);tbodyi.id='mapTableBody';
+	 tri = tr();tbodyi.appendChild(tri);tri.id='probeForward';tri.style.color='red';
+	 tdi = td();tri.appendChild(tdi);tdi.textContent='PROBE';
 	 tdi = td();tri.appendChild(tdi);tdi.textContent='forward';
+	 tdi = td();tri.appendChild(tdi);tdi.textContent=':';
+	 tri = tr();tbodyi.appendChild(tri);tri.id='probeBackward';tri.style.color='red';
+	 tdi = td();tri.appendChild(tdi);tdi.textContent='BASE';tdi.style.color='blue';
 	 tdi = td();tri.appendChild(tdi);tdi.textContent='backward';
-	 tdi = td();tri.appendChild(tdi);tdi.textContent='seq';
+	 tdi = td();tri.appendChild(tdi);tdi.textContent=':';
+	 // Table head
+	 tri = tr();tbodyi.appendChild(tri);tri.id='seq';tri.style.color='red';
+	 tdi = td();tri.appendChild(tdi);tdi.textContent='forward';tdi.style.color='blue';
+	 tdi = td();tri.appendChild(tdi);tdi.textContent='backward';tdi.style.color='blue';
+	 tdi = td();tri.appendChild(tdi);tdi.textContent='seq';tdi.style.color='black';
 	 for (i=0;i<n;i++){
-	    tri = tr();tbodyi.appendChild(tri);
-	    tdi = td();tri.appendChild(tdi);
+	    tri = tr();tbodyi.appendChild(tri);tri.id='B'+i;
+	    tdi = td();tri.appendChild(tdi);tdi.style.color='blue';
 		tdi.textContent='['+ubase.cgrForward[i][0].toString().slice(0,4);
 		for (j=1;j<m;j++){tdi.textContent+=','+ubase.cgrForward[i][j].toString().slice(0,4)}
 		tdi.textContent+=']';
-	    tdi = td();tri.appendChild(tdi);
+	    tdi = td();tri.appendChild(tdi);tdi.style.color='blue';
 		tdi.textContent='['+ubase.cgrBackward[i][0].toString().slice(0,4);
 		for (j=1;j<m;j++){tdi.textContent+=','+ubase.cgrBackward[i][j].toString().slice(0,4)}
 		tdi.textContent+=']';
-	    tdi = td();tri.appendChild(tdi);tdi.textContent=ubase.seq[i];
-	 
+	    tdi = td();tri.appendChild(tdi);tdi.textContent=ubase.seq[i];tdi.style.color='blue';
 	 }
   }
 
 usmGUI.processProbeSequence=function(){
      var seq=gId('probeSequence').value;
 	 console.log('processing probe sequence "'+seq+'"');
-	 uprobe=new usm(seq,ubase.abc,ubase.pack); // encode the probe sequence the same way as teh base sequence
-
-	 // show cube
-	 //c = document.getElementById('baseCube');
-	 //c.style.display="";
-	 //gId('alphabet').textContent=ubase.abc;
-	 //gId('cube').textContent='[ "'+ubase.cube[0]+'"';
-	 //for(var i=1;i<ubase.cube.length;i++){gId('cube').textContent+=' , "'+ubase.cube[i]+'"'}
-	 //gId('cube').textContent+=' ]';
-	 //gId('cgrProbe').style.display="";
-	 //gId('processBase').style.visibility="hidden";
-	 //gId('probeSequence').focus();
-	 //usmGUI.mapTableBase();
-	 return false;
+	 if (window.uprobe){
+	    document.getElementById('mapTable').innerHTML='';usmGUI.processBaseSequence();
+		}
+	 uprobe=new usm(seq,ubase.abc,ubase.pack); // encode the probe sequence the same way as the base sequence
+	 uprobe.M=usmDist(ubase,uprobe);
+	 usmGUI.mapTableProbe();
+  return false;
   }
 
-  usmGUI.mapTableAll=function(){
-	 var tb,tbodyi,tri,tdi,n,m,i,j;
-     tb=gId('mapTable');
-	 tb.style.display="";
-	 n=ubase.seq.length;
-	 m=ubase.cube.length;
-	 tbodyi = tbody();tb.appendChild(tbodyi);
-	 // Table head
-	 tri = tr();tbodyi.appendChild(tri);
-	 tdi = td();tri.appendChild(tdi);tdi.textContent='forward';
-	 tdi = td();tri.appendChild(tdi);tdi.textContent='backward';
-	 tdi = td();tri.appendChild(tdi);tdi.textContent='seq';
-	 for (i=0;i<n;i++){
-	    tri = tr();tbodyi.appendChild(tri);
-	    tdi = td();tri.appendChild(tdi);
-		tdi.textContent='['+ubase.cgrForward[i][0].toString().slice(0,4);
-		for (j=1;j<m;j++){tdi.textContent+=','+ubase.cgrForward[i][j].toString().slice(0,4)}
-		tdi.textContent+=']';
-	    tdi = td();tri.appendChild(tdi);
-		tdi.textContent='['+ubase.cgrBackward[i][0].toString().slice(0,4);
-		for (j=1;j<m;j++){tdi.textContent+=','+ubase.cgrBackward[i][j].toString().slice(0,4)}
-		tdi.textContent+=']';
-	    tdi = td();tri.appendChild(tdi);tdi.textContent=ubase.seq[i];
-	 
+  usmGUI.mapTableProbe=function(){
+     // forward
+	 trf=document.getElementById('probeForward');
+	 var n,m;
+	 n=uprobe.seq.length;m=uprobe.cgrForward[0].length;
+	 for (var i=0;i<n;i++){
+	    c = '[';
+		for (var j=0;j<m;j++){
+		   c+=uprobe.cgrForward[i][j].toString().slice(0,4)+',<br>';
+		}
+	    tdi=td();tdi.innerHTML=c.slice(0,c.length-5)+']';
+		trf.appendChild(tdi);
+	 }
+
+	 // backward
+	 trf=document.getElementById('probeBackward');
+     n=uprobe.seq.length;m=uprobe.cgrBackward[0].length;
+	 for (var i=0;i<n;i++){
+	    c = '[';
+		for (var j=0;j<m;j++){
+		   c+=uprobe.cgrBackward[i][j].toString().slice(0,4)+',<br>';
+		}
+	    tdi=td();tdi.innerHTML=c.slice(0,c.length-5)+']';
+		trf.appendChild(tdi);
+	 }
+
+	 // seq
+	 trf=document.getElementById('seq');
+     for (var i=0;i<n;i++){
+	    tdi=td();tdi.textContent=uprobe.seq[i];tdi.style.color='red';
+		trf.appendChild(tdi);
+	 }
+
+	 // Distance
+	 n=uprobe.M.length;
+	 m=uprobe.M[0].length;
+     for (var i=0;i<n;i++){
+	    trd=document.getElementById('B'+i);
+		for (var j=0;j<m;j++){
+		   var tdj = td();trd.appendChild(tdj);
+		   tdj.textContent=uprobe.M[i][j];
+		}
+	 }
+
+  }
+
+  usmGUI.decodeSingle = function (that,ev){
+     if (ev.keyCode==13){
+	    document.getElementById('singleDecoded').textContent=ubase.decodeBin(that.value).toString().replace(/\,/g,'');
 	 }
   }
-
-
 
   gId('processBase').click();
   </script>

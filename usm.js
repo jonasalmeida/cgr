@@ -237,14 +237,10 @@ usmDist=function(s1,s2,opt){ // Compares two USM encoded sequences
 
 	case 'matrix':
 		//var f1,b1,f2,b2;
-		//create two mirror (forward and backward) version of s1 and s2 
-		f1=s1;f1.c=s1.cgrForward;
-		b1=s1;b1.c=s1.cgrBackward;
-		f2=s2;f2.c=s2.cgrForward;
-		b1=s2;b2.c=s2.cgrBackward;
-		f=f1.c.map(function(x){var x0=x; return f2.c.map(function(x){return f1.distCGR(x0,x)})});
-		b=b1.c.map(function(x){var x0=x; return b2.c.map(function(x){return b1.distCGR(x0,x)})});
-		return [f,b]
+		//create two mirror (forward and backward) version of s1 and s2
+		fb1=s1.transpose([s1.cgrForward,s1.cgrBackward]);
+		fb2=s2.transpose([s2.cgrForward,s2.cgrBackward]);
+		return fb1.map(function(x){var x0=x; return fb2.map(function(x){var res=s1.distCGR(x0[0],x[0])+s1.distCGR(x0[1],x[1]);if(res>1){res=res-1};return res})});
 		break;
 
 	case 'sum':
