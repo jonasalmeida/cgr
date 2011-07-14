@@ -37,8 +37,8 @@
  <div id='usmDistDiv'>
   Between USM coordinates (Eq. 3-5):
  <table id='usmDist' style='color:green'>
- <tr><td>d(</td><td style='color:blue'><span id='usmF1'>Forward: </span><hr><span id='usmB1'>Backward: </span></td><td>,</td><td style='color:red'><span id='usmF2'>Forward: </span><hr><span id='usmB2'>Backward: </span></td><td>)</td><td> = </td><td>dF<hr>dB</td></tr>
- <tr><td></td><td></td><td></td><td></td><td></td><td> =  </td><td>dd</td></tr>
+ <tr><td>d(</td><td style='color:blue'><span id='usmF1'>Forward: </span><hr><span id='usmB1'>Backward: </span></td><td>,</td><td style='color:red'><span id='usmF2'>Forward: </span><hr><span id='usmB2'>Backward: </span></td><td>)</td><td> = </td><td><span id='dF'>dF</span><hr><span id='dB'>dB</span></td></tr>
+ <tr><td></td><td></td><td></td><td></td><td></td><td> =  </td><td><span id='dUSM'>dUSM</span></td></tr>
  </table>
  </div>
  <h3>4. Sequence MapReduce</h3>
@@ -242,8 +242,40 @@ usmGUI.processProbeSequence=function(){
   }
 
   usmGUI.usmDist = function (that,ev){
-     4;
-     console.log([that,ev]);
+     if (ev.keyCode==13){ // if Enter was pressed
+	    // check that other coordinates are filled
+		var n = ubase.cube.length;
+		var checkOk=true; // it will stay true unless one coordinate is missing 
+		for (var j=2;j>0;j=j-1){ // j=[2,1] the two coordinates being compared
+			for (var i=0;i<n;i++){
+				var checkId = that.id.slice(0,1)+j+'C'+i;
+				if (gId(checkId).value.length==0){
+					gId(checkId).focus();
+					checkOk=false;
+					break;
+				}
+			}
+		}
+		if (checkOk){ // calculate distance
+		    var c=[]; // coordinates
+		    for (var j=2;j>0;j=j-1){ // j=[2,1] the two coordinates being compared
+				c[j]=[];
+				for (var i=0;i<n;i++){
+					var id = that.id.slice(0,1)+j+'C'+i;
+					c[j][i]=gId(id).value;
+				}
+			}
+			gId('d'+that.id.slice(0,1)).textContent=ubase.distCGR(c[1],c[2]);
+			// if both dF and dB are available calculate USM distance
+			if (gId('dF').textContent!=='dF'&&gId('dB').textContent!=='dB'){
+				var dUSM=parseInt(gId('dF').textContent)+parseInt(gId('dB').textContent);
+				if (dUSM>0){dUSM=dUSM-1};
+				gId('dUSM').textContent=dUSM;
+			}
+
+		}
+     }
+     
   }
 
 
