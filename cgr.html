@@ -8,26 +8,40 @@
   <script src="usm.js"></script>
  </head>
  <body>
- <h3>1. Sequence</h3>
+ <h3>1. Sequence Encoding</h3>
+ <table><tr><td>
  <table>
  <tr id="cgrBase"><td>Base Sequence:</td><td><input id="baseSequence" type="text" style="color:blue"><button id="processBase" onclick="usmGUI.processBaseSequence()">Encode </button></td></tr>
  <tr id="cgrProbe" style="display:none"><td>Probe Sequence:</td><td><input id="probeSequence" type="text" style="color:red"><button id="processProbe" onclick="usmGUI.processProbeSequence()">Encode</button></td></tr>
  </table>
- <h3>2. Encoding / Decoding</h3>
+ </td><td>
  <table id="baseCube" style="display:none">
  <tr><td>Alphabet: </td><td id="alphabet" style="color:blue"></td></tr>
  <tr><td>Cube zeros: </td><td id="cube" style="color:blue"></td></tr>
  </table>
- <table id="decodeSingle" style="display:">
- <tr><td>Single coordinate (number between 0 and 1)<input  onkeyup="usmGUI.decodeSingle(this,event)" style="color:green"> then press Enter</td></tr>
- <tr><td id="singleDecoded" style="color:green"></td></tr>
+ </td></tr></table>
+ <h3>2. Coordinate Decoding</h3>
+ Coordinates are real numbers between 0 and 1, type and press Enter:
+ <table id="decodeSingle" style="color:green">
+ <tr><td>Single coordinate (binary decoding)</td><td><input  onkeyup="usmGUI.decodeSingle(this,event)"></td><td id="singleDecoded" style="color:green"></td></tr>
  </table>
- <table>
- <tr><td>Forward Coordinates</td><td id="forwardCoordinates"></td><td id="decodeForward"></td></tr>
- <tr><td>Backward Coordinates</td><td id="backwardCoordinates"></td><td id="decodeBackward"></td></tr>
+ <table id="decodeFB" style="display:none">
+ <tr id="forwardCoordinates" style='color:green'><td>Forward</td></tr>
+ <tr id="backwardCoordinates" style='color:green'><td>Backward </td></tr>
  </table>
-
- <h3>3. Sequence analysis (map)</h3>
+ <h3>3. Distance Calculation</h3>
+ Between individual coordinates (Eq. 2):
+ <div id='indDist' style='color:green'>
+ d(<input type='text' id='indC1' onkeyup='usmGUI.indDist(this,event)'  style='color:green'>,<input type='text' id='indC2'  onkeyup='usmGUI.indDist(this,event)' style='color:green'>) = <span id='indD'></span>
+ </div>
+ <div id='usmDistDiv'>
+  Between USM coordinates (Eq. 3-5):
+ <table id='usmDist' style='color:green'>
+ <tr><td>d(</td><td style='color:blue'><span id='usmF1'>Forward: </span><hr><span id='usmB1'>Backward: </span></td><td>,</td><td style='color:red'><span id='usmF2'>Forward: </span><hr><span id='usmB2'>Backward: </span></td><td>)</td><td> = </td><td>dF<hr>dB</td></tr>
+ <tr><td></td><td></td><td></td><td></td><td></td><td> =  </td><td>dd</td></tr>
+ </table>
+ </div>
+ <h3>4. Sequence MapReduce</h3>
  <table id="mapTable" style="display:none;color:blue">
  </table>
   <script>
@@ -36,6 +50,7 @@
   tr = function(){return document.createElement('tr')};
   td = function(){return document.createElement('td')};
   tbody = function(){return document.createElement('tbody')};
+  ip = function(){return document.createElement('input')};
   usmGUI=function(){};
 
   usmGUI.processBaseSequence=function(){
@@ -53,6 +68,9 @@
 	 gId('processBase').style.visibility="hidden";
 	 gId('probeSequence').focus();
 	 usmGUI.mapTableBase();
+	 gId('decodeFB').style.display="";
+	 usmGUI.decodeFB();
+	 usmGUI.usmDistMount();
 	 return false;
   }
   
@@ -150,11 +168,87 @@ usmGUI.processProbeSequence=function(){
 
   usmGUI.decodeSingle = function (that,ev){
      if (ev.keyCode==13){
-	    document.getElementById('singleDecoded').textContent=ubase.decodeBin(that.value).toString().replace(/\,/g,'');
+	    document.getElementById('singleDecoded').textContent=(new usm).decodeBin(that.value).toString().replace(/\,/g,'');
 	 }
   }
 
-  gId('processBase').click();
+  usmGUI.decodeFB = function (that,ev){ // decode CGR coordinates
+	 // and assemple template if it does not exist (if "that" is not provided
+	 var n=ubase.cube.length;
+	 if (!gId("decodeF_0")){
+	    var F = gId("forwardCoordinates");var B = gId("backwardCoordinates");
+		for (var i=0;i<n;i++){
+		   var tdFi=td();
+		   tdFi.innerHTML='<input type="text" id="'+'decodeF_'+i+'" onkeyup="usmGUI.decodeFB(this,event)">';
+		   F.appendChild(tdFi);
+		   var tdBi=td();
+		   tdBi.innerHTML='<input type="text" id="'+'decodeB_'+i+'" onkeyup="usmGUI.decodeFB(this,event)">';
+		   B.appendChild(tdBi);
+		}
+		var tdFi=td();tdFi.id='decodeFcalc';F.appendChild(tdFi);
+		var tdBi=td();tdBi.id='decodeBcalc';B.appendChild(tdBi);
+	 }
+	 else { // decoding here
+	   //console.log(that);
+	   if (ev.keyCode==13){ // ENTER PRESSED
+	      // Forward or backward?
+		  var id = that.id.split('_');
+		  var calc='yes';
+		  for (var i=0;i<n;i++){ // check for empty coordinates
+		     if (gId(id[0]+'_'+i).value.length==0){
+			    gId(id[0]+'_'+i).focus();
+				calc='no';
+				break;
+			    //console.log(i);
+		     }
+		  }
+		  if (calc=='yes'){
+		     var c=[];
+			 for (var i=0;i<n;i++){
+			    c[i]=gId(id[0]+'_'+i).value;
+			 }
+		     gId(id[0]+'calc').textContent=ubase.decode(c);
+		  }
+	   }
+	 }
+  }
+
+  usmGUI.indDist = function(that,ev){
+     if (ev.keyCode==13){
+	     //check that both coordinates are filled
+		 if (gId('indC1').value.length>0&&gId('indC2').value.length>0){
+		    gId('indD').textContent=(new usm).L(gId('indC1').value,gId('indC2').value);
+		 }
+     }
+  }
+
+  
+  usmGUI.usmDistMount=function (){
+     n=ubase.cube.length;
+	 for (var i=0;i<n;i++){
+	    var ipi=ip();ipi.size=8;ipi.id='F1C'+i;ipi.style.color='blue';
+		ipi.onkeyup=function onkeyup(event){usmGUI.usmDist(this,event)};
+		gId('usmF1').appendChild(ipi);
+		var ipi=ip();ipi.size=8;ipi.id='B1C'+i;ipi.style.color='blue';
+		ipi.onkeyup=function onkeyup(event){usmGUI.usmDist(this,event)};
+		gId('usmB1').appendChild(ipi);
+		var ipi=ip();ipi.size=8;ipi.id='F2C'+i;ipi.style.color='red';
+		ipi.onkeyup=function onkeyup(event){usmGUI.usmDist(this,event)};
+		gId('usmF2').appendChild(ipi);
+		var ipi=ip();ipi.size=8;ipi.id='B2C'+i;ipi.style.color='red';
+		ipi.onkeyup=function onkeyup(event){usmGUI.usmDist(this,event)};
+		gId('usmB2').appendChild(ipi);
+	 }
+  }
+
+  usmGUI.usmDist = function (that,ev){
+     4;
+     console.log([that,ev]);
+  }
+
+
+  
+  //gId('processBase').click();
   </script>
  </body>
 </html>
