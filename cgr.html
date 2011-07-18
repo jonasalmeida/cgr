@@ -8,11 +8,11 @@
   <script src="usm.js"></script>
  </head>
  <body>
- <h3>1. Sequence Encoding</h3>
+ <h3><a id="anchor_encoding" name="encoding">1.</a> Sequence Encoding</h3>
  <table><tr><td>
  <table>
- <tr id="cgrBase"><td>Base Sequence:</td><td><input id="baseSequence" type="text" style="color:blue"><button id="processBase" onclick="usmGUI.processBaseSequence()">Encode </button></td></tr>
- <tr id="cgrProbe" style="display:none"><td>Probe Sequence:</td><td><input id="probeSequence" type="text" style="color:red"><button id="processProbe" onclick="usmGUI.processProbeSequence()">Encode</button></td></tr>
+ <tr id="cgrBase"><td>Base Sequence:</td><td><input id="baseSequence" type="text" size=30 style="color:blue"><button id="processBase" onclick="usmGUI.processBaseSequence()">Encode </button></td></tr>
+ <tr id="cgrProbe" style="display:none"><td>Probe Sequence:</td><td><input id="probeSequence" type="text" size=30 style="color:red"><button id="processProbe" onclick="usmGUI.processProbeSequence()">Encode</button></td></tr>
  </table>
  </td><td>
  <table id="baseCube" style="display:none">
@@ -20,19 +20,19 @@
  <tr><td>Cube zeros: </td><td id="cube" style="color:blue"></td></tr>
  </table>
  </td></tr></table>
- <h3>2. Coordinate Decoding</h3>
+ <h3><a id="anchor_decoding" name="decoding">2.</a> Coordinate Decoding</h3>
  Coordinates are real numbers between 0 and 1, type and press Enter:
  <table id="decodeSingle" style="color:green">
- <tr><td>Single coordinate (binary decoding)</td><td><input  onkeyup="usmGUI.decodeSingle(this,event)"></td><td id="singleDecoded" style="color:green"></td></tr>
+ <tr><td>Single coordinate (binary decoding)</td><td><input  size=8 onkeyup="usmGUI.decodeSingle(this,event)"></td><td id="singleDecoded" style="color:green"></td></tr>
  </table>
  <table id="decodeFB" style="display:none">
  <tr id="forwardCoordinates" style='color:green'><td>Forward</td></tr>
  <tr id="backwardCoordinates" style='color:green'><td>Backward </td></tr>
  </table>
- <h3>3. Distance Calculation</h3>
+ <h3><a id="anchor_distance" name="distance">3.</a> Distance Calculation</h3>
  Between individual coordinates (Eq. 2):
  <div id='indDist' style='color:green'>
- d(<input type='text' id='indC1' onkeyup='usmGUI.indDist(this,event)'  style='color:green'>,<input type='text' id='indC2'  onkeyup='usmGUI.indDist(this,event)' style='color:green'>) = <span id='indD'></span>
+ d(<input type='text' id='indC1' size=8 onkeyup='usmGUI.indDist(this,event)'  style='color:green'>,<input type='text' id='indC2'  size=8 onkeyup='usmGUI.indDist(this,event)' style='color:green'>) = <span id='indD'></span>
  </div>
  <div id='usmDistDiv'>
   Between USM coordinates (Eq. 3-5):
@@ -41,7 +41,7 @@
  <tr><td></td><td></td><td></td><td></td><td></td><td> =  </td><td><span id='dUSM'>dUSM</span></td></tr>
  </table>
  </div>
- <h3>4. Sequence MapReduce</h3>
+ <h3><a id="anchor_map" name="map">4.</a> Sequence MapReduce</h3>
  <table id="mapTable" style="display:none;color:blue">
  </table>
   <script>
@@ -84,11 +84,11 @@
 	 tri = tr();tbodyi.appendChild(tri);tri.id='probeForward';tri.style.color='red';
 	 tdi = td();tri.appendChild(tdi);tdi.textContent='PROBE';
 	 tdi = td();tri.appendChild(tdi);tdi.textContent='forward';
-	 tdi = td();tri.appendChild(tdi);tdi.textContent=':';
+	 tdi = td();tri.appendChild(tdi);tdi.textContent='Map';
 	 tri = tr();tbodyi.appendChild(tri);tri.id='probeBackward';tri.style.color='red';
 	 tdi = td();tri.appendChild(tdi);tdi.textContent='BASE';tdi.style.color='blue';
 	 tdi = td();tri.appendChild(tdi);tdi.textContent='backward';
-	 tdi = td();tri.appendChild(tdi);tdi.textContent=':';
+	 tdi = td();tri.appendChild(tdi);tdi.textContent='Map';
 	 // Table head
 	 tri = tr();tbodyi.appendChild(tri);tri.id='seq';tri.style.color='red';
 	 tdi = td();tri.appendChild(tdi);tdi.textContent='forward';tdi.style.color='blue';
@@ -132,7 +132,9 @@ usmGUI.processProbeSequence=function(){
 		}
 	    tdi=td();tdi.innerHTML=c.slice(0,c.length-5)+']';
 		trf.appendChild(tdi);
-	 }
+	 };
+	 tdi=td();trf.appendChild(tdi);
+	 tdi=td();trf.appendChild(tdi);
 
 	 // backward
 	 trf=document.getElementById('probeBackward');
@@ -144,7 +146,11 @@ usmGUI.processProbeSequence=function(){
 		}
 	    tdi=td();tdi.innerHTML=c.slice(0,c.length-5)+']';
 		trf.appendChild(tdi);
-	 }
+	 };
+	 tdi=td();trf.appendChild(tdi);tdi.textContent='Reduce';tdi.style.color='blue';
+	 tdi=td();trf.appendChild(tdi);tdi.textContent='to:';tdi.style.color='blue';
+	 
+	 
 
 	 // seq
 	 trf=document.getElementById('seq');
@@ -152,17 +158,64 @@ usmGUI.processProbeSequence=function(){
 	    tdi=td();tdi.textContent=uprobe.seq[i];tdi.style.color='red';
 		trf.appendChild(tdi);
 	 }
+	 tdi=td();trf.appendChild(tdi);tdi.textContent='Sum';tdi.style.color='blue';
+	 tdi=td();trf.appendChild(tdi);tdi.textContent='Max';tdi.style.color='blue';
 
 	 // Distance
 	 n=uprobe.M.length;
 	 m=uprobe.M[0].length;
+	 uprobe.Msum=[];uprobe.Mmax=[];
      for (var i=0;i<n;i++){
 	    trd=document.getElementById('B'+i);
 		for (var j=0;j<m;j++){
 		   var tdj = td();trd.appendChild(tdj);
 		   tdj.textContent=uprobe.M[i][j];
 		}
+		uprobe.Msum[i]=uprobe.M[i].reduce(function(a,b){return(a+b)});
+		uprobe.Mmax[i]=uprobe.M[i].reduce(function(a,b){if (b>a){return b}else{return a}});
+		tdj=td();trd.appendChild(tdj);tdj.textContent=uprobe.Msum[i];tdj.style.color='blue';	 tdj=td();trd.appendChild(tdj);tdj.textContent=uprobe.Mmax[i];tdj.style.color='blue';
 	 }
+	 var tbody=gId('mapTableBody');// final two rows
+	 // Sum
+	 trd=tr();tbody.appendChild(trd);
+	 tdj=td();trd.appendChild(tdj);tdj.textContent='Reduce';tdj.style.color='red';
+	 tdj=td();trd.appendChild(tdj);tdj.textContent='Sum';tdj.style.color='red';
+	 tdj=td();trd.appendChild(tdj);tdj.textContent='';tdj.style.color='red';
+	 uprobe.MT=uprobe.transpose(uprobe.M); // transposed distance matrix
+	 uprobe.MTsum=[];
+	 for (var j=0;j<m;j++){
+		uprobe.MTsum[j]=uprobe.MT[j].reduce(function(a,b){return(a+b)});
+		var tdj = td();trd.appendChild(tdj);
+		tdj.textContent=uprobe.MTsum[j];
+		tdj.style.color='red';
+	 }
+	 var tdj = td();trd.appendChild(tdj);
+	 tdj.textContent=uprobe.Msum.reduce(function(a,b){return a+b});
+	 tdj.style.color='black';
+	 var tdj = td();trd.appendChild(tdj);
+	 tdj.textContent=uprobe.Mmax.reduce(function(a,b){return a+b});
+	 tdj.style.color='black';
+	 // Max
+	 trd=tr();tbody.appendChild(trd);
+	 tdj=td();trd.appendChild(tdj);tdj.textContent='to:';tdj.style.color='red';
+	 tdj=td();trd.appendChild(tdj);tdj.textContent='Max';tdj.style.color='red';
+	 tdj=td();trd.appendChild(tdj);tdj.textContent='';tdj.style.color='red';
+	 //uprobe.MT=uprobe.transpose(uprobe.M); // transposed distance matrix <-- done already
+	 uprobe.MTmax=[];
+	 for (var j=0;j<m;j++){
+		uprobe.MTmax[j]=uprobe.MT[j].reduce(function(a,b){if (b>a){return b}else{return a}});
+		var tdj = td();trd.appendChild(tdj);
+		tdj.textContent=uprobe.MTsum[j];
+		tdj.style.color='red';
+	 }
+	 var tdj = td();trd.appendChild(tdj);
+	 tdj.textContent=uprobe.Msum.reduce(function(a,b){if (b>a){return b}else{return a}});
+	 tdj.style.color='black';
+	 var tdj = td();trd.appendChild(tdj);
+	 tdj.textContent=uprobe.Mmax.reduce(function(a,b){if (b>a){return b}else{return a}});
+	 tdj.style.color='black';
+
+
 
   }
 
@@ -179,10 +232,10 @@ usmGUI.processProbeSequence=function(){
 	    var F = gId("forwardCoordinates");var B = gId("backwardCoordinates");
 		for (var i=0;i<n;i++){
 		   var tdFi=td();
-		   tdFi.innerHTML='<input type="text" id="'+'decodeF_'+i+'" onkeyup="usmGUI.decodeFB(this,event)">';
+		   tdFi.innerHTML='<input type="text" id="'+'decodeF_'+i+'" size=8 onkeyup="usmGUI.decodeFB(this,event)">';
 		   F.appendChild(tdFi);
 		   var tdBi=td();
-		   tdBi.innerHTML='<input type="text" id="'+'decodeB_'+i+'" onkeyup="usmGUI.decodeFB(this,event)">';
+		   tdBi.innerHTML='<input type="text" id="'+'decodeB_'+i+'" size=8 onkeyup="usmGUI.decodeFB(this,event)">';
 		   B.appendChild(tdBi);
 		}
 		var tdFi=td();tdFi.id='decodeFcalc';F.appendChild(tdFi);
