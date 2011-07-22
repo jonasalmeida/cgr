@@ -73,7 +73,21 @@
 	 usmGUI.usmDistMount();
 	 return false;
   }
-  
+  usmGUI.mouseOverUSM = function (that,ev){// mouse over base coordinate
+	 //lala=[that,ev];
+	 if (that.id[0]=="B"){var u=ubase}
+	 else {var u=uprobe}
+	 var i = parseInt(that.id.slice(1,that.id.length-1));
+	 for (var j=0;j<ubase.cube.length;j++){
+		gId('decodeF'+'_'+j).value=u.cgrForward[i][j];
+		gId('decodeB'+'_'+j).value=u.cgrBackward[i][j];
+	 }
+	 // simulating keying ENTER, not sneaking the sequence out of ubase:
+	 usmGUI.decodeFB(gId('decodeF_0'),{'keyCode':13});
+	 usmGUI.decodeFB(gId('decodeB_0'),{'keyCode':13});
+	 return false;
+  }
+
   usmGUI.mapTableBase=function(){
 	 var tb,tbodyi,tri,tdi,n,m,i,j;
      tb=gId('mapTable');tb.style.color='black';
@@ -100,11 +114,17 @@
 		tdi.textContent='['+ubase.cgrForward[i][0].toString().slice(0,4);
 		for (j=1;j<m;j++){tdi.textContent+=','+ubase.cgrForward[i][j].toString().slice(0,4)}
 		tdi.textContent+=']';
-	    tdi = td();tri.appendChild(tdi);tdi.style.color='blue';
+		tdi.id='B'+i+'F';
+		tdi.onmouseover=function onmouseover(event){usmGUI.mouseOverUSM(this,event);return false};
+	    tdi.onclick=function onclick(event){window.location.hash="";window.location.hash="decoding";return false};
+		tdi = td();tri.appendChild(tdi);tdi.style.color='blue';
 		tdi.textContent='['+ubase.cgrBackward[i][0].toString().slice(0,4);
 		for (j=1;j<m;j++){tdi.textContent+=','+ubase.cgrBackward[i][j].toString().slice(0,4)}
 		tdi.textContent+=']';
-	    tdi = td();tri.appendChild(tdi);tdi.textContent=ubase.seq[i];tdi.style.color='blue';
+	    tdi.id='B'+i+'B';
+		tdi.onmouseover=function onmouseover(event){usmGUI.mouseOverUSM(this,event);return false};
+		tdi.onclick=function onmouseclick(event){window.location.hash="";window.location.hash="decoding";return false};
+		tdi = td();tri.appendChild(tdi);tdi.textContent=ubase.seq[i];tdi.style.color='blue';
 	 }
   }
 
@@ -130,7 +150,7 @@ usmGUI.processProbeSequence=function(){
 		for (var j=0;j<m;j++){
 		   c+=uprobe.cgrForward[i][j].toString().slice(0,4)+',<br>';
 		}
-	    tdi=td();tdi.innerHTML=c.slice(0,c.length-5)+']';
+	    tdi=td();tdi.innerHTML=c.slice(0,c.length-5)+']';tdi.id='P'+i+'F';
 		trf.appendChild(tdi);
 	 };
 	 tdi=td();trf.appendChild(tdi);
@@ -144,7 +164,7 @@ usmGUI.processProbeSequence=function(){
 		for (var j=0;j<m;j++){
 		   c+=uprobe.cgrBackward[i][j].toString().slice(0,4)+',<br>';
 		}
-	    tdi=td();tdi.innerHTML=c.slice(0,c.length-5)+']';
+	    tdi=td();tdi.innerHTML=c.slice(0,c.length-5)+']';tdi.id='P'+i+'B';
 		trf.appendChild(tdi);
 	 };
 	 tdi=td();trf.appendChild(tdi);tdi.textContent='Reduce';tdi.style.color='blue';
