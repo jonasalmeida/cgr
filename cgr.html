@@ -151,6 +151,8 @@ usmGUI.processProbeSequence=function(){
 		   c+=uprobe.cgrForward[i][j].toString().slice(0,4)+',<br>';
 		}
 	    tdi=td();tdi.innerHTML=c.slice(0,c.length-5)+']';tdi.id='P'+i+'F';
+		tdi.onmouseover=function onmouseover(event){usmGUI.mouseOverUSM(this,event);return false};
+	    tdi.onclick=function onclick(event){window.location.hash="";window.location.hash="decoding";return false};
 		trf.appendChild(tdi);
 	 };
 	 tdi=td();trf.appendChild(tdi);
@@ -165,6 +167,8 @@ usmGUI.processProbeSequence=function(){
 		   c+=uprobe.cgrBackward[i][j].toString().slice(0,4)+',<br>';
 		}
 	    tdi=td();tdi.innerHTML=c.slice(0,c.length-5)+']';tdi.id='P'+i+'B';
+		tdi.onmouseover=function onmouseover(event){usmGUI.mouseOverUSM(this,event);return false};
+	    tdi.onclick=function onclick(event){window.location.hash="";window.location.hash="decoding";return false};
 		trf.appendChild(tdi);
 	 };
 	 tdi=td();trf.appendChild(tdi);tdi.textContent='Reduce';tdi.style.color='blue';
