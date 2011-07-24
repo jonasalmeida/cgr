@@ -88,6 +88,23 @@
 	 return false;
   }
 
+  usmGUI.mouseOverDistance = function(that){ // mouse over distance in USMap
+     //console.log([that.i,that.j])
+	 var i = that.i ; var j = that.j;
+	 for (var k=0;k<ubase.cube.length;k++){
+	    gId('F1C'+k).value=ubase.cgrForward[i][k];
+		gId('B1C'+k).value=ubase.cgrBackward[i][k];
+		gId('F2C'+k).value=uprobe.cgrForward[j][k];
+		gId('B2C'+k).value=uprobe.cgrBackward[j][k];
+	 }
+	 // no cheating: the values are processed where they are
+	 usmGUI.usmDist(gId('F1C0'),{keyCode:13});
+	 usmGUI.usmDist(gId('B1C0'),{keyCode:13});
+
+
+	 return false;
+  }
+
   usmGUI.mapTableBase=function(){
 	 var tb,tbodyi,tri,tdi,n,m,i,j;
      tb=gId('mapTable');tb.style.color='black';
@@ -194,6 +211,9 @@ usmGUI.processProbeSequence=function(){
 		for (var j=0;j<m;j++){
 		   var tdj = td();trd.appendChild(tdj);
 		   tdj.textContent=uprobe.M[i][j];
+		   tdj.i=i;tdj.j=j;
+		   tdj.onmouseover=function onmouseover(event){usmGUI.mouseOverDistance(this);return false};
+		   tdj.onclick=function onclick(event){window.location.hash="";window.location.hash="distance";return false};
 		}
 		uprobe.Msum[i]=uprobe.M[i].reduce(function(a,b){return(a+b)});
 		uprobe.Mmax[i]=uprobe.M[i].reduce(function(a,b){if (b>a){return b}else{return a}});
