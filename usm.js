@@ -3,16 +3,13 @@
 console.log('CGR toolbox :-)');
 
 // Overloading String and Array - watch out!
-String.prototype.toArray = function(){ // creates an Array with each character of teh string as an element
-    var y=[];
-    for (var i=0;i<this.length;i++){
-        y[i]=this[i];
-    }
-    return y;
+
+String.prototype.reverse=function(){ // sort characters of a string
+    return this.split('').reverse().toString().replace(/,/g,'');
 }
 
 String.prototype.sort=function(){ // sort characters of a string
-    return this.toArray().sort().toString().replace(/,/g,'');
+    return this.split('').sort().toString().replace(/,/g,'');
 }
 
 Array.prototype.max=function(){ // returns maximum value
@@ -150,7 +147,7 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
             else{y[i]=0}
             x = x*2;i++;
         }
-        return y
+        return y;
     }
 
     //this.decodeBins = function(x,n){// decode sequence from coordinates

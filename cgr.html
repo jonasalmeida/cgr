@@ -265,7 +265,8 @@ usmGUI.processProbeSequence=function(){
 
   usmGUI.decodeSingle = function (that,ev){
      if (ev.keyCode==13){
-	    document.getElementById('singleDecoded').textContent=(new usm).decodeBin(that.value).toString().replace(/\,/g,'');
+	    var v = (new usm).decodeBin(that.value).toString().replace(/\,/g,'');
+		document.getElementById('singleDecoded').textContent='['+v[0]+']'+v.slice(1);
 	 }
   }
 
@@ -304,7 +305,11 @@ usmGUI.processProbeSequence=function(){
 			 for (var i=0;i<n;i++){
 			    c[i]=gId(id[0]+'_'+i).value;
 			 }
-		     gId(id[0]+'calc').textContent=ubase.decode(c);
+			 var ds=ubase.decode(c);
+			 //prepare decoded string for display
+			 if (id[0][6]=='F'){ds=ds.slice(1).reverse()+'['+ds[0]+']'} // forward
+			 else {ds='['+ds[0]+']'+ds.slice(1)} // backward
+		     gId(id[0]+'calc').textContent=ds; // display
 		  }
 	   }
 	 }
