@@ -1,4 +1,4 @@
-// Universal Sequence Maps (hoding Object for CGR operations
+// Universal Sequence Maps (hoding Object for CGR operations 
 
 console.log('CGR toolbox :-)');
 
