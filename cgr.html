@@ -42,6 +42,7 @@
  </table>
  </div>
  <h3><a id="anchor_map" name="map">4.</a> Sequence MapReduce</h3>
+ <p id='borrowedFBdecoded' style='color:green'></p>
  <table id="mapTable" style="display:none;color:blue">
  </table>
   <script>
@@ -85,6 +86,7 @@
 	 // simulating keying ENTER, not sneaking the sequence out of ubase:
 	 usmGUI.decodeFB(gId('decodeF_0'),{'keyCode':13});
 	 usmGUI.decodeFB(gId('decodeB_0'),{'keyCode':13});
+	 gId('borrowedFBdecoded').textContent=gId('decodeFcalc').textContent+gId('decodeBcalc').textContent.slice(3);
 	 return false;
   }
 
@@ -310,6 +312,7 @@ usmGUI.processProbeSequence=function(){
 			 if (id[0][6]=='F'){ds=ds.slice(1).reverse()+'['+ds[0]+']'} // forward
 			 else {ds='['+ds[0]+']'+ds.slice(1)} // backward
 		     gId(id[0]+'calc').textContent=ds; // display
+			 //gId('borrowedFBdecoded').textContent=''; //clear decoded FB sequence from #4
 		  }
 	   }
 	 }
