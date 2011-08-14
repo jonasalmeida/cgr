@@ -125,6 +125,9 @@ function [u,kf,kb,y]=usm(Seq,AlphaB,L,S,seed)
 %             very large sequences.
 %
 %Jonas Almeida 28 February 2006
+% published in 
+% Almeida, J.S., S.Vinga (2006) Computing distribution of scale independent motifs in biological sequences. 
+% Algorithms for Molecular Biology. 1:18. [PMID:17049089].
 
 %1. Check if Seq is a sequence or a text file with the sequence
 if ischar(Seq)
