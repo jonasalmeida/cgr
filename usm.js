@@ -217,6 +217,7 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
 	}
 
     if (seq){this.encode(seq,abc,pack)}
+	else {if (abc){this.encode(abc,abc,pack)}} // if alphabet is provided then identify cube anyway to enable decoding
 
 }
 
