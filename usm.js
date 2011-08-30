@@ -132,9 +132,13 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
             this.cgrForward[i]=this.cgr(this.bin[i]);
             this.cgrBackward[i]=this.cgr(this.bin[i].slice().reverse()).slice().reverse();
         }
-        //delete this.bin; // comment out if bin is of any use <---<---<--- NOTE!
+        //delete this.bin; // comment out if .bin is of no use <---<---<--- NOTE!
         this.cgrForward=this.transpose(this.cgrForward);
         this.cgrBackward=this.transpose(this.cgrBackward);
+		this.usm=[];
+		for (var i=0;i<n;i++){ // In a serious application .usm is all we'd need to keep .cgr--- etc could all be deleted
+			this.usm[i]=[this.cgrForward[i],this.cgrBackward[i]];
+		}
     }
 
     this.decodeBin = function(x,n){// decompose single coordinate, x, into a binary array of length <= n
@@ -208,12 +212,17 @@ usm = function (seq,abc,pack){ // Universal Sequence Map
         return [f,b].transpose().sum();
     }
 
-	this.distMatrix=function (s){// Distance Matrix to a new sequence
-		var f,b;
-		s=new usm(s,this.abc,this.pack); // encode it the same way as teh reference matrix
-		f = this.cgrForward.map(function(x){var x0=x; return s.cgrForward.map(function(x){return s.distCGR(x0,x)})});
-        b = this.cgrBackward.map(function(x){var x0=x; return s.cgrBackward.map(function(x){return s.distCGR(x0,x)})});
-		return [f,b];
+	this.dist = function (x,y){ // Equation 5: distance between two usm coordinates for a position, i
+		                        // each provided as a two element Array [cgrForward[i],cgrBackward[i]]
+		var d=this.distCGR(x[0],y[0])+this.distCGR(x[1],y[1])-1;
+		if (d<0){d=0}
+		return d
+	}
+
+	this.distMap=function (sprobe,sbase){// Distance Map to a new probing sequence, sprobe
+		if (typeof(sprobe)=='string'){sprobe = new usm(sprobe,this.abc,this.pack)} // in case the actual sequence was inputed
+		if (!sbase){sbase=this} //
+		return sbase.usm.map(function(x){return sprobe.usm.map(function(y){return sbase.dist(x,y)})});
 	}
 
     if (seq){this.encode(seq,abc,pack)}

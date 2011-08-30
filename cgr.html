@@ -154,7 +154,7 @@ usmGUI.processProbeSequence=function(){
 	    document.getElementById('mapTable').innerHTML='';usmGUI.processBaseSequence();
 		}
 	 uprobe=new usm(seq,ubase.abc,ubase.pack); // encode the probe sequence the same way as the base sequence
-	 uprobe.M=usmDist(ubase,uprobe);
+	 uprobe.M=ubase.distMap(uprobe);
 	 usmGUI.mapTableProbe();
   return false;
   }
