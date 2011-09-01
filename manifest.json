@@ -1,10 +1,11 @@
 {
   "name": "USMapReduce",
   "description": "Universal Sequence Map",
-  "version": "1",
+  "version": "1.2",
   "app": {
     "urls": [
-      "*://cgr.googlecode.com/hg/"
+      "*://cgr.googlecode.com/hg/",
+      "*://cgr.googlecode.com/hg/usm.js"
     ],
     "launch": {
       "web_url": "http://cgr.googlecode.com/hg/cgr.html"
